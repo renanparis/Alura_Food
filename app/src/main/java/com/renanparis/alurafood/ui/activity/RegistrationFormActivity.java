@@ -9,8 +9,11 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.google.android.material.textfield.TextInputLayout;
 import com.renanparis.alurafood.R;
+import com.renanparis.alurafood.formatter.TelephoneDDDFormatter;
+import com.renanparis.alurafood.validator.EmailValidator;
 import com.renanparis.alurafood.validator.StandardValidator;
-import com.renanparis.alurafood.validator.ValidatorCpf;
+import com.renanparis.alurafood.validator.CpfValidator;
+import com.renanparis.alurafood.validator.TelephoneValidator;
 
 import br.com.caelum.stella.format.CPFFormatter;
 
@@ -26,38 +29,63 @@ public class RegistrationFormActivity extends AppCompatActivity {
     }
 
     private void startFieldsForm() {
-        configFieldName();
-        configFieldCpf();
-        configFieldTelephone();
-        configFieldEmail();
-        configFieldPassword();
+        configNameField();
+        configCpfField();
+        configTelephoneField();
+        configEmailField();
+        configPasswordField();
     }
 
-    private void configFieldPassword() {
+    private void configPasswordField() {
         TextInputLayout inputLayoutPassword = findViewById(R.id.registration_form_password);
-        checkFieldForm(inputLayoutPassword);
+        checkFormField(inputLayoutPassword);
     }
 
-    private void configFieldEmail() {
+    private void configEmailField() {
         TextInputLayout inputLayoutEmail = findViewById(R.id.registration_form_email);
-        checkFieldForm(inputLayoutEmail);
+        final EditText emailField = inputLayoutEmail.getEditText();
+        final EmailValidator emailValidator = new EmailValidator(inputLayoutEmail);
+        emailField.setOnFocusChangeListener(new View.OnFocusChangeListener() {
+            @Override
+            public void onFocusChange(View v, boolean hasFocus) {
+                if (!hasFocus){
+                    emailValidator.isValidEmail();
+                }
+            }
+        });
     }
 
-    private void configFieldTelephone() {
+    private void configTelephoneField() {
         TextInputLayout inputLayoutTelephone = findViewById(R.id.registration_form_telephone);
-        checkFieldForm(inputLayoutTelephone);
+        final EditText telephoneField = inputLayoutTelephone.getEditText();
+        final TelephoneValidator phoneValidator = new TelephoneValidator(inputLayoutTelephone);
+        final TelephoneDDDFormatter formatter = new TelephoneDDDFormatter();
+        telephoneField.setOnFocusChangeListener(new View.OnFocusChangeListener() {
+            @Override
+            public void onFocusChange(View v, boolean hasFocus) {
+                String telephone = telephoneField.getText().toString();
+                if (hasFocus){
+                    String unformattedPhone = formatter.removePhoneFormat(telephone);
+                    telephoneField.setText(unformattedPhone);
+
+                }else {
+                    phoneValidator.isValid();
+                }
+            }
+        });
     }
 
-    private void configFieldCpf() {
+
+    private void configCpfField() {
         final TextInputLayout inputLayoutCpf = findViewById(R.id.registration_form_cpf);
-        final EditText fieldCpf = inputLayoutCpf.getEditText();
+        final EditText cpfField = inputLayoutCpf.getEditText();
         final CPFFormatter cpfFormatter = new CPFFormatter();
-        final ValidatorCpf validator = new ValidatorCpf(inputLayoutCpf);
-        fieldCpf.setOnFocusChangeListener(new View.OnFocusChangeListener() {
+        final CpfValidator validator = new CpfValidator(inputLayoutCpf);
+        cpfField.setOnFocusChangeListener(new View.OnFocusChangeListener() {
             @Override
             public void onFocusChange(View v, boolean hasFocus) {
                 if (hasFocus) {
-                    addCpfFormat(cpfFormatter, fieldCpf);
+                    removeCpfFormat(cpfFormatter, cpfField);
 
                 } else {
                     validator.isValidCpf();
@@ -68,7 +96,7 @@ public class RegistrationFormActivity extends AppCompatActivity {
 
     }
 
-    private void addCpfFormat(CPFFormatter cpfFormatter, EditText fieldCpf) {
+    private void removeCpfFormat(CPFFormatter cpfFormatter, EditText fieldCpf) {
         String cpf = fieldCpf.getText().toString();
         try {
             String cpfUnformatted = cpfFormatter.unformat(cpf);
@@ -78,12 +106,12 @@ public class RegistrationFormActivity extends AppCompatActivity {
         }
     }
 
-    private void configFieldName() {
+    private void configNameField() {
         TextInputLayout inputLayoutName = findViewById(R.id.registration_form_full_name);
-        checkFieldForm(inputLayoutName);
+        checkFormField(inputLayoutName);
     }
 
-    private void checkFieldForm(final TextInputLayout inputLayoutField) {
+    private void checkFormField(final TextInputLayout inputLayoutField) {
         final EditText field = inputLayoutField.getEditText();
         final StandardValidator validator = new StandardValidator(inputLayoutField);
         field.setOnFocusChangeListener(new View.OnFocusChangeListener() {
