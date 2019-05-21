@@ -1,39 +1,35 @@
 package com.renanparis.alurafood.ui.activity;
 
-import androidx.appcompat.app.AppCompatActivity;
-
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
 
+import androidx.appcompat.app.AppCompatActivity;
+
 import com.google.android.material.textfield.TextInputLayout;
 import com.renanparis.alurafood.R;
+import com.renanparis.alurafood.validator.StandardValidator;
+import com.renanparis.alurafood.validator.ValidatorCpf;
 
 import br.com.caelum.stella.format.CPFFormatter;
-import br.com.caelum.stella.validation.CPFValidator;
-import br.com.caelum.stella.validation.InvalidStateException;
 
 public class RegistrationFormActivity extends AppCompatActivity {
+
+    public static final String ERROR_FORMAT_CPF = "erro formatação cpf";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.registration_form_activity);
-
         startFieldsForm();
-
     }
 
     private void startFieldsForm() {
         configFieldName();
-
         configFieldCpf();
-
         configFieldTelephone();
-
         configFieldEmail();
-
         configFieldPassword();
     }
 
@@ -56,27 +52,15 @@ public class RegistrationFormActivity extends AppCompatActivity {
         final TextInputLayout inputLayoutCpf = findViewById(R.id.registration_form_cpf);
         final EditText fieldCpf = inputLayoutCpf.getEditText();
         final CPFFormatter cpfFormatter = new CPFFormatter();
-
+        final ValidatorCpf validator = new ValidatorCpf(inputLayoutCpf);
         fieldCpf.setOnFocusChangeListener(new View.OnFocusChangeListener() {
             @Override
             public void onFocusChange(View v, boolean hasFocus) {
-                String cpf = fieldCpf.getText().toString();
-                if (!hasFocus) {
-                    if (!confirmRequiredField(cpf, inputLayoutCpf)) return;
-                    if (!confirmRequiredElevenDigits(cpf, inputLayoutCpf)) return;
-                    if (!confirmValidCPF(cpf, inputLayoutCpf)) return;
-                    removeError(inputLayoutCpf);
+                if (hasFocus) {
+                    addCpfFormat(cpfFormatter, fieldCpf);
 
-                    String cpfFormat = cpfFormatter.format(cpf);
-                    fieldCpf.setText(cpfFormat);
-
-                }else {
-                    try {
-                        String cpfUnformatted = cpfFormatter.unformat(cpf);
-                        fieldCpf.setText(cpfUnformatted);
-                    }catch (IllegalArgumentException e){
-                        Log.e("erro formatação cpf", e.getMessage());
-                    }
+                } else {
+                    validator.isValidCpf();
 
                 }
             }
@@ -84,28 +68,14 @@ public class RegistrationFormActivity extends AppCompatActivity {
 
     }
 
-    private boolean confirmValidCPF(String cpf, TextInputLayout inputLayoutCpf) {
+    private void addCpfFormat(CPFFormatter cpfFormatter, EditText fieldCpf) {
+        String cpf = fieldCpf.getText().toString();
         try {
-            CPFValidator cpfValidator = new CPFValidator();
-            cpfValidator.assertValid(cpf);
-        } catch (InvalidStateException e) {
-            inputLayoutCpf.setError("CPF inválido");
-            return false;
+            String cpfUnformatted = cpfFormatter.unformat(cpf);
+            fieldCpf.setText(cpfUnformatted);
+        } catch (IllegalArgumentException e) {
+            Log.e(ERROR_FORMAT_CPF, e.getMessage());
         }
-        return true;
-    }
-
-    private void removeError(TextInputLayout inputLayout) {
-        inputLayout.setError(null);
-        inputLayout.setErrorEnabled(false);
-    }
-
-    private boolean confirmRequiredElevenDigits(String cpf, TextInputLayout inputLayoutCpf) {
-        if (cpf.length() != 11) {
-            inputLayoutCpf.setError("CPF precisa ter 11 dígitos");
-            return false;
-        }
-        return true;
     }
 
     private void configFieldName() {
@@ -115,25 +85,15 @@ public class RegistrationFormActivity extends AppCompatActivity {
 
     private void checkFieldForm(final TextInputLayout inputLayoutField) {
         final EditText field = inputLayoutField.getEditText();
+        final StandardValidator validator = new StandardValidator(inputLayoutField);
         field.setOnFocusChangeListener(new View.OnFocusChangeListener() {
             @Override
             public void onFocusChange(View v, boolean hasFocus) {
-                String text = field.getText().toString();
                 if (!hasFocus) {
-                    if (!confirmRequiredField(text, inputLayoutField)) return;
-                    removeError(inputLayoutField);
+                    validator.isValid();
                 }
             }
         });
     }
 
-    private boolean confirmRequiredField(String text, TextInputLayout inputLayoutField) {
-        if (text.isEmpty()) {
-            inputLayoutField.setError("Campo Obrigatório");
-            return false;
-        }
-        return true;
-
-    }
 }
-
