@@ -4,7 +4,7 @@ import android.widget.EditText;
 
 import com.google.android.material.textfield.TextInputLayout;
 
-public class StandardValidator {
+public class StandardValidator implements Validator{
 
     public static final String REQUIRED_FIELD = "Campo Obrigatório";
     private TextInputLayout inputLayoutField;

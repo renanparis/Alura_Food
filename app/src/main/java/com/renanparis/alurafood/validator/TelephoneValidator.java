@@ -5,7 +5,7 @@ import android.widget.EditText;
 import com.google.android.material.textfield.TextInputLayout;
 import com.renanparis.alurafood.formatter.TelephoneDDDFormatter;
 
-public class TelephoneValidator {
+public class TelephoneValidator implements Validator {
 
     private static final String TEN_OUR_ELEVEN_DIGITS = "Telefone precisa ter 10 ou 11 dígitos";
     private final TextInputLayout inputLayout;
@@ -31,12 +31,14 @@ public class TelephoneValidator {
         return true;
     }
 
-    public void isValid() {
+    public boolean isValid() {
 
-        if (!standardValidator.isValid()) return;
+        if (!standardValidator.isValid()) return false;
         String telephone = telephoneField.getText().toString();
-        if (!tenOurElevenDigits(telephone)) return;
-        telephoneFieldFormatter(telephone);
+        String unformattedPhone = formatter.removePhoneFormat(telephone);
+        if (!tenOurElevenDigits(unformattedPhone)) return false;
+        telephoneFieldFormatter(unformattedPhone);
+        return true;
 
     }
 
